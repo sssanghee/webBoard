@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.0.min.js" ></script>
+
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<p>제목 : <input id="title" type="text"> </p> 
+	<p>내용</p> <textarea id="content" cols="50" rows="20"></textarea> 
+	<button class="insertBoard">게시글 작성</button>
+</body>
+<script type="text/javascript">
+$(document).ready(function(){
+
+	const loginId =location.href.split('?')[1];
+	console.log(loginId);
+	
+	$('.insertBoard').click(function(){
+		let title = document.getElementById("title").value;
+		let content = document.getElementById("content").value;
+		let data = {"title" : title, "content": content, "id": loginId };
+
+		$.ajax({
+			url: "/uploadBoard",
+			type: "post",
+			data: data,
+			success : function(data){
+				console.log(data);
+				if(data == "upload"){
+					alert("업로드 완료");
+					location.href = `boardmain.html?${loginId}`;
+				}
+			}
+		})
+	});
+	
+	
+})
+
+
+</script>
+</html>

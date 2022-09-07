@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.0.min.js" ></script>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<h1>로그인</h1>
+	아이디<input type="text" id="id"><br>
+	비밀번호<input type="password" id="pw"><br>
+	<button class="login">로그인</button>
+	<button class="join" onclick="location.href='join.html';">회원가입</button>
+</body>
+<script type="text/javascript">
+$(document).ready(function(){
+	$('.login').click(function(){
+		let id = document.getElementById('id').value;
+		let pw = document.getElementById('pw').value;
+		console.log(id);
+		console.log(pw);
+		let data = {"id" : id, "pw": pw};
+		$.ajax({
+			url: "/login",
+			type: "post",
+			data: data,		
+			success: function(data){
+				console.log(data);
+				if(data === "login"){
+					alert("로그인성공");
+					location.href = `boardmain.html?${id}`;
+				}else{
+					alert("로그인 실패");
+				}
+				
+				
+			}
+		})
+	});
+	
+	
+})
+
+
+</script>
+</html>
