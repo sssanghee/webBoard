@@ -24,7 +24,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.board.example.mapper.BoardMapper;
 import com.board.example.model.Board;
 import com.board.example.model.loginInfo;
+import com.board.example.model.Pagination;
 import com.board.example.service.BoardService;
+import com.board.example.service.PaginationService;
 
 @Controller
 public class BoardController {
@@ -32,12 +34,13 @@ public class BoardController {
 	@Autowired
 	BoardService boardService;
 	
+	@Autowired
+	PaginationService paginationService;
+		
 	@PostMapping("/login")
 	@ResponseBody
 	public ResponseEntity<String> tryLogin(loginInfo info) {
 		try {
-			System.out.println("회원정보 "+ info.getId() + ")))) " + info.getPw());
-			
 			String loginInfo = boardService.tryLogin(info);
 			return new ResponseEntity<>(loginInfo, HttpStatus.OK);
 		}catch(Exception e) {
@@ -61,22 +64,28 @@ public class BoardController {
 	@PostMapping("/uploadBoard")
 	@ResponseBody
 	public ResponseEntity<String> uploadBoard(Board board){
-		System.out.println(board.getBno());
-		System.out.println(board.getContent());
-		System.out.println(board.getTitle());
-		System.out.println(board.getId());
-		System.out.println(board.getRegidate());
-		
 		String msg = boardService.uploadBoard(board);
-		
 		return new ResponseEntity<>(msg, HttpStatus.OK);
 	}
 	
-	@GetMapping("/getAll")
-	public ResponseEntity<List<Board>> abc() {
+	@GetMapping("/getAll/{lowNum}/{highNum}")
+	public ResponseEntity<List<Board>> getBoard(@PathVariable("lowNum") int lowNum,
+												@PathVariable("highNum") int highNum) {
 		try {
-			List<Board> a = boardService.selectAll();
+			List<Board> a = boardService.selectAll(lowNum, highNum);
 			return new ResponseEntity<>(a, HttpStatus.OK);
+		}catch(Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@GetMapping("/pagination/{idx}")
+	public ResponseEntity<Pagination> setPaging(@PathVariable("idx") int idx){
+		try {
+			Pagination result = paginationService.setPaging(idx);
+			return new ResponseEntity<>(result, HttpStatus.OK);
+			
 		}catch(Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);

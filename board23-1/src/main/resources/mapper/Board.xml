@@ -4,33 +4,42 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
  
 <mapper namespace="com.board.example.mapper.BoardMapper">
-    <select id="selectAll" resultType="com.board.example.model.Board">
+
+    <select id="selectAll" parameterType="java.util.Map" resultType="com.board.example.model.Board">
+    
       SELECT 
       	*
-      FROM
-      	board
+      FROM	board
+      ORDER BY regidate DESC
+      limit #{lowNum} , #{highNum}
     </select>
     
     <select id="uploadBoard" resultType="com.board.example.model.Board">
-    	insert into Board(title, content, id)
-    	values(#{title}, #{content}, #{id})
+    	INSERT INTO Board(title, content, id)
+    	VALUES(#{title}, #{content}, #{id})
     </select>
     
     <select id="setContent" parameterType="integer" resultType="com.board.example.model.Board">
-    	select *
-    	from BOARD
-    	where BNO = #{BNO}
+    	SELECT *
+    	FROM board
+    	WHERE BNO = #{BNO}
     
     </select>
     
     <delete id="deleteBoard" parameterType="com.board.example.model.Board">
-    delete from board 
-    where id = #{id} and title = #{title} and bno = #{bno}
+    	DELETE 
+    	FROM board 
+    	WHERE id = #{id} and title = #{title} and bno = #{bno}
     </delete>
     
     <update id="updateBoard" parameterType="com.board.example.model.Board">
-    	update board
-    	set title = #{title}, content = #{content}
-    	where bno = #{bno} and id = #{id} 
+    	UPDATE board
+    	SET title = #{title}, content = #{content}
+    	WHERE bno = #{bno} and id = #{id} 
     </update>
+    
+    <select id="countPage" resultType="integer">
+    	select count(*)
+    	from board
+    </select>
 </mapper>

@@ -1,82 +1,136 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.0.min.js" ></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <meta charset="UTF-8">
 <title>Insert title here</title>
 </head>
+
 <body>
 	<h1>게시판</h1>
-	<table class="table test">
+	<table class="table test"> 
 		<tr>
-			<th> 번호 </th>
 			<th> 제목 </th>
 			<th> 작성자 </th>
 			<th> 등록시간 </th>
 		</tr>
 		<tbody id="tableRow">
-		
 		</tbody>
-	</table>
+		
+
+	</table>		
+	<div>
+		<button><</button>
+		
+		<div class="pagination"></div>
+		
+		<button>></button>
+	</div>
+		
 	<button class="addContent">글쓰기</button>
 	<div id="sentence"></div>
 	
 </body>
+
 <script type="text/javascript">
+
+const loginId =location.href.split('?')[1];
+let selectedIdx = 1;
+
+
 $(document).ready(function(){
-	const loginId =location.href.split('?')[1];
-	console.log(loginId);
-
-
+	
 	$.ajax({
-		url: "/getAll",
+		url: `/pagination/${selectedIdx}`,
 		type: "get",
 		contentType: "application/json;charset=UTF-8",
 		success: function(data){
-			console.log(data);
 			
-			let table = document.getElementById("tableRow");
-			console.log(table);
+			if(data.totalIdx > 10){
+				for(let i = 1; i <= 10; i++){
+					let pageBtn = '<button type="button" class="pageBtn" id="pageBtn" style="width:100px">{}</button>';
+					pageBtn = pageBtn.replace('{}', i);
+					$('.pagination').append(pageBtn);
+				}
+			}else{
+				for(let i = 1; i <= data.totalIdx; i++){
+					let pageBtn = '<button type="button" class="pageBtn" id="pageBtn" style="width:100px">{}</button>';
+					pageBtn = pageBtn.replace('{}', i);
+
+					$('.pagination').append(pageBtn);
+				}
+				
+			}
+			bringBoard(1);
+		}
+	})
+	$(".addContent").click(function(){
+		location.href = `addContent.html?${loginId}`;
+	})
+	
+	$(document).on("click", ".pageBtn", function() {
+		let idx = $(this).index() + 1 ;
+		bringBoard(idx);
+	})
+})
+
+
+
+
+function bringBoard(idx){
+	const highBoardNum = idx * 10;
+	const lowBoardNum = highBoardNum - 10;
+	
+	$.ajax({
+		url: `/getAll/${lowBoardNum}/${highBoardNum}`,
+		type: "get",
+		contentType: "application/json;charset=UTF-8",
+		success: function(data){
 			
+			$("#tableRow *").remove();
+			
+			let table = document.getElementById("tableRow");			
 			for(let i = 0; i < data.length; i++){
 				let tr1 = document.createElement("tr");
 				let trClass = data[i].bno;
 				tr1.setAttribute("class", trClass);
 				tr1.setAttribute("onclick", `trClick('${data[i].bno}');`);
-				
-				let data1 = document.createElement('td');
-				data1.innerHTML = data[i].bno;
+
 				let data2 = document.createElement('td');
 				data2.innerHTML = data[i].title;
 				let data3 = document.createElement('td');
 				data3.innerHTML = data[i].id;
 				let data4 = document.createElement('td');
-				data4.innerHTML = data[i].regidate;
-				tr1.appendChild(data1);
+				let regidate = data[i].regidate.split('T')[0];
+				let regitime = data[i].regidate.split('T')[1].substr(0, 5);
+				data4.innerHTML = regidate + " " + regitime;
+
 				tr1.appendChild(data2);
 				tr1.appendChild(data3);
 				tr1.appendChild(data4);
 				tableRow.appendChild(tr1);
+
 			}
 		}
 	})
-	
-	$(".addContent").click(function(){
-		location.href = `addContent.html?${loginId}`;
-	})
-})
+}
+
 
 function trClick(res){
 	let bno = Number(res);
-	console.log(typeof(bno));
 	$.ajax({
 		url: `/getContent/${bno}`,
 		type: "get",
 		success: function(data){
-			console.log(data);
 			
 			const sentence = document.getElementById("sentence");
 
+			let regidate = data.regidate.split('T')[0];
+			let regitime = data.regidate.split('T')[1].substr(0, 5);
+			let regidateAndTime = regidate + " " + regitime;
+			
 			let row = `<h3>제목</h3><br>
 					   <input id="editTitle" type="text" value="${data.title}"></input><br>
 					   <h3>내용</h3><br>
@@ -84,20 +138,17 @@ function trClick(res){
 					   <h3>작성자</h3><br>
 					   <label>${data.id}</label><br>
 					   <h3>등록일</h3><br>
-					   <label>${data.regidate}</label><br>`;
+					   <label>${regidateAndTime}</label><br>`;
 			let editBtn = `<button onclick="editClick('${bno}', '${data.id}')">수정</button>`;
 			let delBtn = `<button id="delBtn" onclick="delClick('${bno}', '${data.id}')">삭제</button>`;
 			sentence.innerHTML = row + editBtn + delBtn;  
 			
 		}
 	})
-
-	
 }
+
 function editClick(bno, id){
 	const loginId =location.href.split('?')[1];
-	console.log(bno, id);
-	console.log(loginId);
 	if(loginId === id){
 		let titleText = document.getElementById('editTitle').value;
 		let contentText = document.getElementById('editContent').value;
@@ -108,7 +159,6 @@ function editClick(bno, id){
 			type: "put",
 			data: data,
 			success: function(data){
-				console.log(data);
 				alert("수정완료");
 			}
 		})
@@ -122,7 +172,6 @@ function delClick(bno, id){
 	const loginId = location.href.split('?')[1];
 	let titleText = document.getElementById('editTitle').value;
 	
-	console.log(titleText);
 	if(loginId === id){
 		let data = {"title" : titleText, "id" : id, "bno" : bno};
 		$.ajax({
@@ -130,7 +179,6 @@ function delClick(bno, id){
 			type: "delete",
 			data: data,
 			success: function(data){
-				console.log(data);
 				alert("삭제 완료");
 			}
 			

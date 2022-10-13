@@ -1,7 +1,9 @@
 package com.board.example.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,14 +22,17 @@ public class BoardService {
 	@Autowired
 	MemberMapper memberMapper;
 	
-	public List<Board> selectAll(){
+	public List<Board> selectAll(int lowNum, int highNum){
+		Map<String, Integer> params = new HashMap<String, Integer>();
+		params.put("lowNum", lowNum);
+		params.put("highNum", highNum);
 		
-		return boardmapper.selectAll();
+		
+		return boardmapper.selectAll(params);
 	}
 	
 	public String tryLogin(loginInfo info) {
 		List<loginInfo> getAllInfo = memberMapper.getAllInfo();
-		System.out.println("info = ? " + getAllInfo);
 				
 		String returnVal = "loginFail";
 		for(loginInfo each : getAllInfo) {
